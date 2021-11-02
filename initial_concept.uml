@@ -1,0 +1,52 @@
+@startuml
+
+hide empty members
+
+abstract class Server {
+  + {abstract} search_for_products(n: int): List[Product]
+  + {abstract} create_server(List[Product]):
+  + id: int
+  # n_max_returned_entries: int
+}
+
+class ServerMap {
+    - create_server(List[Product]): Dict
+    - search_for_products(n: int): List[Product]
+    - sort(products: Dict)
+    - _products: Dict
+}
+
+class ServerList {
+    - create_server(List[Product]): List[Product]
+    - search_for_products(n: int): List[Product]
+    - sort(products: List[Products])
+    - _products: List[Product]
+}
+
+class Product {
+  + create_product(name: str, price: float)
+  - _name: string
+  - _price: float
+}
+
+class Client {
+  + client_init(server: Server)
+  - _server_id : int
+}
+
+class TooManyProductsFoundError {
+    - throw_error()
+}
+
+class Error {
+
+}
+
+Client o-- Server
+Server <|-- ServerMap
+Server <|-- ServerList
+ServerList *-- Product
+ServerMap *-- Product
+TooManyProductsFoundError ..> Client : << uses >>
+Error --|> TooManyProductsFoundError
+@enduml
