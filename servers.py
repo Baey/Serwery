@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Optional, Union
 from typing import List, Dict
 from abc import ABC, abstractmethod, abstractproperty
 
@@ -29,7 +29,7 @@ class Product:
 
     def __eq__(self, other):
         return self.name == other.name and self.price == other.price  # FIXME: zwróć odpowiednią wartość
-
+    # Poniższe metody umożliwiają porówynywanie poszczególnych instancji klasy
     def __lt__(self, other):
         return self.price < other.price
 
@@ -67,16 +67,17 @@ class Server(ABC):
         self.__class__.servers_number += 1  # po powstaniu instancji klasy inkrementujemy zmienną klasową
 
     @abstractmethod
-    def search_for_products(self, n_letters: int = 1) -> List[Product]:
+    def get_entries(self, n_letters: int = 1) -> List[Product]:
         pass
 
 
 class ListServer(Server):
     def __init__(self, products: List[Product]):
         super().__init__()  # Przy konstrukcji ListServer Tworzymy też Server, który jest klasą macierzystą
+        products = list(dict.fromkeys(products)) # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products: List[Product] = products
 
-    def search_for_products(self, n_letters: int = 1) -> List[Product]:
+    def get_entries(self, n_letters: int = 1) -> List[Product]:
         search_results: List[Product] = []
         for product in self.products:
             letters_counter = 0
@@ -95,9 +96,11 @@ class MapServer:
     def __init__(self, products: List[Product]):
         # self.products = {product.name: product.price for product in products}
         # W treści zadania jest, że nazwa to klucz a wartość obiekt Product nie??
+        super().__init__()
+        products = list(dict.fromkeys(products)) # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products = {product.name: product for product in products}
 
-    def search_for_products(self, n_letters: int = 1) -> List[Product]:
+    def get_entries(self, n_letters: int = 1) -> List[Product]:
         search_results: List[Product] = []
         for product in self.products:
             letters_counter = 0
@@ -114,17 +117,14 @@ class MapServer:
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
-    def __init__(self, server_id) -> None:
-        self.server_id = server_id
+    def __init__(self, server: Server) -> None:
+        self.server = server
 
-    def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
+    def get_total_price(self, n_letters: Optional[int]) -> Union[float, None]:
         try:
-            pass
+            return sum(product.price for product in self.server.get_entries(n_letters))
         except:
-            # TooManyProductsFoundError
-            pass
-
-    pass
+            raise TooManyProductsFoundError
 
 
 def qsort_products(products: List[Product], start: int = 0, stop: int = -1) -> List[Product]:
