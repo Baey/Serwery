@@ -17,7 +17,10 @@ class Product:
         # Nie wiem co to było, więc zostawiam na razie
         # if re.fullmatch('[a-zA-Z][0-9]', name) is None: # FIXME: No nie działa mi to na razie :(((((((((((((((
         #     raise ValueError
-
+        # Sprawdzam czy po cyfrze nie pojawia się znak
+        for i in range(len(name) - 1):
+            if name[i].isdigit() and name[i + 1].isalpha():
+                raise ValueError
         # Tutaj bardzo 'pythonic' mi wyszło sprawdzenie czy ma co najmniej jeden znak i cyfrę
         contains_number = True if True in [sign.isdigit() for sign in name] else False
         contains_alpha = True if True in [sign.isalpha() for sign in name] else False
@@ -29,6 +32,7 @@ class Product:
 
     def __eq__(self, other):
         return self.name == other.name and self.price == other.price  # FIXME: zwróć odpowiednią wartość
+
     # Poniższe metody umożliwiają porówynywanie poszczególnych instancji klasy
     def __lt__(self, other):
         return self.price < other.price
@@ -74,7 +78,7 @@ class Server(ABC):
 class ListServer(Server):
     def __init__(self, products: List[Product]):
         super().__init__()  # Przy konstrukcji ListServer Tworzymy też Server, który jest klasą macierzystą
-        products = list(dict.fromkeys(products)) # Produkty nie mogą się powtarzać, więc usuwam duplikaty
+        products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products: List[Product] = products
 
     def get_entries(self, n_letters: int = 1) -> List[Product]:
@@ -97,7 +101,7 @@ class MapServer:
         # self.products = {product.name: product.price for product in products}
         # W treści zadania jest, że nazwa to klucz a wartość obiekt Product nie??
         super().__init__()
-        products = list(dict.fromkeys(products)) # Produkty nie mogą się powtarzać, więc usuwam duplikaty
+        products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products = {product.name: product for product in products}
 
     def get_entries(self, n_letters: int = 1) -> List[Product]:
