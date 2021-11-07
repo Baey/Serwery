@@ -24,7 +24,8 @@ class Product:
         # Tutaj bardzo 'pythonic' mi wyszło sprawdzenie czy ma co najmniej jeden znak i cyfrę
         contains_number = True if True in [sign.isdigit() for sign in name] else False
         contains_alpha = True if True in [sign.isalpha() for sign in name] else False
-        if not contains_alpha or not contains_number:
+        contains_other_sign = True if True in [not sign.isalnum() for sign in name] else False
+        if not contains_alpha or not contains_number or contains_other_sign:
             raise ValueError
 
         self.name: str = name
