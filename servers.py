@@ -52,14 +52,16 @@ class Product:
 
 
 # Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
-#Fixme Nieskończone!!!
 class TooManyProductsFoundError(Exception):
-    def __init__(self, number_of_founded_products, message='kkk'):
+    def __init__(self, number_of_founded_products, n_max_returned_entries,
+                 message='Number of founded products exceeds the limit'):
         self.number_of_founded_products = number_of_founded_products
+        self.n_max_returned_entries = n_max_returned_entries
         self.message = message
 
     def __str__(self):
-        return ''
+        return self.message + ' ({0} > {1})'.format(self.number_of_founded_products, self.n_max_returned_entries)
+
 
 # FIXME: Każada z poniższych klas serwerów powinna posiadać:
 #   (1) metodę inicjalizacyjną przyjmującą listę obiektów typu `Product` i ustawiającą atrybut `products` zgodnie z typem reprezentacji produktów na danym serwerze,
@@ -67,7 +69,7 @@ class TooManyProductsFoundError(Exception):
 #   (3) możliwość odwołania się do metody `get_entries(self, n_letters)` zwracającą listę produktów spełniających kryterium wyszukiwania
 
 class Server(ABC):
-    n_max_returned_entries: int = 5
+    n_max_returned_entries: int = 2
     # ilość serwerów to zmienna dostępna dla każdej instancji klasy, tak jak n_max_returned_entries
     # i jest wykorzystywana do przydzielania id do nowego serwera
     servers_number = 0
@@ -99,10 +101,12 @@ class ListServer(Server):
                     numbers_counter += 1
             if letters_counter == n_letters and numbers_counter in [2, 3]:
                 search_results.append(product)
+            if len(search_results) > self.n_max_returned_entries:
+                raise TooManyProductsFoundError(len(search_results),self.n_max_returned_entries) # Wyrzucenie wyjątku
         return qsort_products(search_results)
 
 
-class MapServer:
+class MapServer(Server):
     def __init__(self, products: List[Product]):
         # self.products = {product.name: product.price for product in products}
         # W treści zadania jest, że nazwa to klucz a wartość obiekt Product nie??
@@ -122,21 +126,19 @@ class MapServer:
                     numbers_counter += 1
             if letters_counter == n_letters and numbers_counter in [2, 3]:
                 search_results.append(self.products.get(product))
+            if len(search_results) > self.n_max_returned_entries:
+                raise TooManyProductsFoundError(len(search_results),self.n_max_returned_entries) # Wyrzucenie wyjątku
         return qsort_products(search_results)
 
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
-    server: Server
 
     def __init__(self, server: Server) -> None:
         self.server = server
 
     def get_total_price(self, n_letters: Optional[int]) -> Union[float, None]:
-        try:
-            return sum(product.price for product in self.server.get_entries(n_letters))
-        except:
-            raise TooManyProductsFoundError
+        return sum(product.price for product in self.server.get_entries(n_letters))
 
 
 def qsort_products(products: List[Product], start: int = 0, stop: int = -1) -> List[Product]:
