@@ -51,10 +51,15 @@ class Product:
         return hash((self.name, self.price))
 
 
+# Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
+#Fixme Nieskończone!!!
 class TooManyProductsFoundError(Exception):
-    # Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
-    pass
+    def __init__(self, number_of_founded_products, message='kkk'):
+        self.number_of_founded_products = number_of_founded_products
+        self.message = message
 
+    def __str__(self):
+        return ''
 
 # FIXME: Każada z poniższych klas serwerów powinna posiadać:
 #   (1) metodę inicjalizacyjną przyjmującą listę obiektów typu `Product` i ustawiającą atrybut `products` zgodnie z typem reprezentacji produktów na danym serwerze,
@@ -122,6 +127,8 @@ class MapServer:
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
+    server: Server
+
     def __init__(self, server: Server) -> None:
         self.server = server
 
