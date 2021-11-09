@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import re
 from typing import Optional, Union
 from typing import List, Dict
 from abc import ABC, abstractmethod, abstractproperty
@@ -14,16 +14,7 @@ class Product:
         if not isinstance(name, str) or not isinstance(price, (float, int)):
             raise ValueError
 
-        # Sprawdzam czy po cyfrze nie pojawia się znak
-        for i in range(len(name) - 1):
-            if name[i].isdigit() and name[i + 1].isalpha():
-                raise ValueError
-
-        # Tutaj bardzo 'pythonic' mi wyszło sprawdzenie czy ma co najmniej jeden znak i cyfrę
-        contains_number = True if True in [sign.isdigit() for sign in name] else False
-        contains_alpha = True if True in [sign.isalpha() for sign in name] else False
-        contains_other_sign = True if True in [not sign.isalnum() for sign in name] else False
-        if not contains_alpha or not contains_number or contains_other_sign:
+        if re.fullmatch(r'^[a-zA-Z]+\d+$', name) is None:
             raise ValueError
 
         self.name: str = name
@@ -78,7 +69,7 @@ class Server(ABC):
 
     def get_entries(self, n_letters: int = 1) -> List[Product]:
         search_results: List[Product] = []
-        for product in self.get_products_list():
+        for product in self._get_products_list():
             letters_counter = 0
             numbers_counter = 0
             for sign in product.name:
@@ -93,8 +84,8 @@ class Server(ABC):
         return sorted(search_results)
 
     @abstractmethod
-    def get_products_list(self) -> List[Product]:
-        pass
+    def _get_products_list(self) -> List[Product]:
+        raise NotImplemented
 
 
 class ListServer(Server):
@@ -103,7 +94,7 @@ class ListServer(Server):
         products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products: List[Product] = products
 
-    def get_products_list(self) -> List[Product]:
+    def _get_products_list(self) -> List[Product]:
         return self.products
 
 
@@ -113,7 +104,7 @@ class MapServer(Server):
         products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products = {product.name: product for product in products}
 
-    def get_products_list(self, n_letters: int = 1) -> List[Product]:
+    def _get_products_list(self, n_letters: int = 1) -> List[Product]:
         return [product for product in self.products.values()]
 
 
