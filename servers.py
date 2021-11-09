@@ -14,13 +14,11 @@ class Product:
         if not isinstance(name, str) or not isinstance(price, (float, int)):
             raise ValueError
 
-        # Nie wiem co to było, więc zostawiam na razie
-        # if re.fullmatch('[a-zA-Z][0-9]', name) is None: # FIXME: No nie działa mi to na razie :(((((((((((((((
-        #     raise ValueError
         # Sprawdzam czy po cyfrze nie pojawia się znak
         for i in range(len(name) - 1):
             if name[i].isdigit() and name[i + 1].isalpha():
                 raise ValueError
+
         # Tutaj bardzo 'pythonic' mi wyszło sprawdzenie czy ma co najmniej jeden znak i cyfrę
         contains_number = True if True in [sign.isdigit() for sign in name] else False
         contains_alpha = True if True in [sign.isalpha() for sign in name] else False
@@ -69,7 +67,7 @@ class TooManyProductsFoundError(Exception):
 #   (3) możliwość odwołania się do metody `get_entries(self, n_letters)` zwracającą listę produktów spełniających kryterium wyszukiwania
 
 class Server(ABC):
-    n_max_returned_entries: int = 2
+    n_max_returned_entries: int = 3
     # ilość serwerów to zmienna dostępna dla każdej instancji klasy, tak jak n_max_returned_entries
     # i jest wykorzystywana do przydzielania id do nowego serwera
     servers_number = 0
@@ -78,20 +76,9 @@ class Server(ABC):
         self.id = self.__class__.servers_number
         self.__class__.servers_number += 1  # po powstaniu instancji klasy inkrementujemy zmienną klasową
 
-    @abstractmethod
-    def get_entries(self, n_letters: int = 1) -> List[Product]:
-        pass
-
-
-class ListServer(Server):
-    def __init__(self, products: List[Product]):
-        super().__init__()  # Przy konstrukcji ListServer Tworzymy też Server, który jest klasą macierzystą
-        products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
-        self.products: List[Product] = products
-
     def get_entries(self, n_letters: int = 1) -> List[Product]:
         search_results: List[Product] = []
-        for product in self.products:
+        for product in self.get_products_list():
             letters_counter = 0
             numbers_counter = 0
             for sign in product.name:
@@ -102,33 +89,32 @@ class ListServer(Server):
             if letters_counter == n_letters and numbers_counter in [2, 3]:
                 search_results.append(product)
             if len(search_results) > self.n_max_returned_entries:
-                raise TooManyProductsFoundError(len(search_results),self.n_max_returned_entries) # Wyrzucenie wyjątku
+                raise TooManyProductsFoundError(len(search_results), self.n_max_returned_entries)  # Wyrzucenie wyjątku
         return qsort_products(search_results)
+
+    @abstractmethod
+    def get_products_list(self) -> List[Product]:
+        pass
+
+
+class ListServer(Server):
+    def __init__(self, products: List[Product]):
+        super().__init__()  # Przy konstrukcji ListServer Tworzymy też Server, który jest klasą macierzystą
+        products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
+        self.products: List[Product] = products
+
+    def get_products_list(self) -> List[Product]:
+        return self.products
 
 
 class MapServer(Server):
     def __init__(self, products: List[Product]):
-        # self.products = {product.name: product.price for product in products}
-        # W treści zadania jest, że nazwa to klucz a wartość obiekt Product nie??
         super().__init__()
         products = list(dict.fromkeys(products))  # Produkty nie mogą się powtarzać, więc usuwam duplikaty
         self.products = {product.name: product for product in products}
 
-    def get_entries(self, n_letters: int = 1) -> List[Product]:
-        search_results: List[Product] = []
-        for product in self.products:
-            letters_counter = 0
-            numbers_counter = 0
-            for sign in product:
-                if sign.isalpha():
-                    letters_counter += 1
-                if sign.isdigit():
-                    numbers_counter += 1
-            if letters_counter == n_letters and numbers_counter in [2, 3]:
-                search_results.append(self.products.get(product))
-            if len(search_results) > self.n_max_returned_entries:
-                raise TooManyProductsFoundError(len(search_results),self.n_max_returned_entries) # Wyrzucenie wyjątku
-        return qsort_products(search_results)
+    def get_products_list(self, n_letters: int = 1) -> List[Product]:
+        return [product for product in self.products.values()]
 
 
 class Client:
