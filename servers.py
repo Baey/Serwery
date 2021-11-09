@@ -90,7 +90,7 @@ class Server(ABC):
                 search_results.append(product)
             if len(search_results) > self.n_max_returned_entries:
                 raise TooManyProductsFoundError(len(search_results), self.n_max_returned_entries)  # Wyrzucenie wyjątku
-        return qsort_products(search_results)
+        return sorted(search_results)
 
     @abstractmethod
     def get_products_list(self) -> List[Product]:
@@ -125,25 +125,3 @@ class Client:
 
     def get_total_price(self, n_letters: Optional[int]) -> Union[float, None]:
         return sum(product.price for product in self.server.get_entries(n_letters))
-
-
-def qsort_products(products: List[Product], start: int = 0, stop: int = -1) -> List[Product]:
-    if stop == -1:
-        stop = len(products) - 1
-    i = start
-    j = stop
-    pivot = products[start]
-    while i < j:
-        while products[i] < pivot:
-            i += 1
-        while products[j] > pivot:
-            j -= 1
-        if i <= j:
-            products[i], products[j] = products[j], products[i]
-            i += 1
-            j -= 1
-    if start < j:
-        qsort_products(products, start, j)
-    if i < stop:
-        qsort_products(products, i, stop)
-    return products
