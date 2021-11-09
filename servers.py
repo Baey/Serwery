@@ -70,15 +70,9 @@ class Server(ABC):
     def get_entries(self, n_letters: int = 1) -> List[Product]:
         search_results: List[Product] = []
         for product in self._get_products_list():
-            letters_counter = 0
-            numbers_counter = 0
-            for sign in product.name:
-                if sign.isalpha():
-                    letters_counter += 1
-                if sign.isdigit():
-                    numbers_counter += 1
-            if letters_counter == n_letters and numbers_counter in [2, 3]:
+            if not re.fullmatch('^[a-zA-Z]{{{n}}}\\d{{2,3}}$'.format(n=n_letters), product.name) is None:
                 search_results.append(product)
+
             if len(search_results) > self.n_max_returned_entries:
                 raise TooManyProductsFoundError(len(search_results), self.n_max_returned_entries)  # Wyrzucenie wyjątku
         return sorted(search_results)
