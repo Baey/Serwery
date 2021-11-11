@@ -109,4 +109,12 @@ class Client:
         self.server = server
 
     def get_total_price(self, n_letters: Optional[int]) -> Union[float, None]:
-        return sum(product.price for product in self.server.get_entries(n_letters))
+        try:
+            Sum = sum(product.price for product in self.server.get_entries(n_letters))
+            if Sum:
+                return Sum
+            else:
+                return None
+        except:
+            return None
+
