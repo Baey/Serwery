@@ -21,20 +21,37 @@ class Product:
         self.price: float = float(price)
 
     def __eq__(self, other):
-        return self.name == other.name and self.price == other.price  # FIXME: zwróć odpowiednią wartość
+        # Okazało się, że jak się porówna instancje różnych typów, to python i tak będzie próbował uzyskać dostęp do pola name i price
+        # więc najpierw sprawdzam zgodność tpyów
+        if isinstance(other, Product):
+            return self.name == other.name and self.price == other.price  # FIXME: zwróć odpowiednią wartość
+        else:
+            raise TypeError # A tutaj sobie taki error wymyśliłem
 
     # Poniższe metody umożliwiają porówynywanie poszczególnych instancji klasy
     def __lt__(self, other):
-        return self.price < other.price
+        if isinstance(other, Product):
+            return self.price < other.price
+        else:
+            raise TypeError
 
     def __le__(self, other):
-        return self.price <= other.price
+        if isinstance(other, Product):
+            return self.price <= other.price
+        else:
+            raise TypeError
 
     def __gt__(self, other):
-        return self.price > other.price
+        if isinstance(other, Product):
+            return self.price > other.price
+        else:
+            raise TypeError
 
     def __ge__(self, other):
-        return self.price >= other.price
+        if isinstance(other, Product):
+            return self.price >= other.price
+        else:
+            raise TypeError
 
     def __hash__(self):
         return hash((self.name, self.price))

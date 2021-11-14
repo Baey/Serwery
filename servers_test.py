@@ -61,7 +61,7 @@ class ClientTest(unittest.TestCase):
 
 class ProductTest(unittest.TestCase):
 
-    def test_right_name(self):
+    def test_normal_name(self):
         product = Product('wod55', 100)
         self.assertEqual(100, product.price)
         self.assertEqual('wod55', product.name)
